@@ -310,7 +310,7 @@ def get_assets ():
 
 
 # Create a SecurityHub client
-securityhub = boto3.client("securityhub")
+securityhub = boto3.client("securityhub", region_name=AWS_REGION)
 
 
 # Collect AWS Instance vulnerabilities from Tenable.io
