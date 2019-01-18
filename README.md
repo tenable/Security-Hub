@@ -35,6 +35,7 @@ usage: sechubingest.py [-h] [--tio-access-key TIO_ACCESS_KEY]
                        [--aws-access-id AWS_ACCESS_ID]
                        [--aws-secret-key AWS_SECRET_KEY]
                        [--log-level LOG_LEVEL] [--since OBSERVED_SINCE]
+                       [--run-every RUN_EVERY]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -57,4 +58,9 @@ optional arguments:
                         error, crit
   --since OBSERVED_SINCE
                         The unix timestamp of the age threshold
+  --run-every RUN_EVERY
+                        How many hours between recurring imports
 ```
+
+### Changelog
+[Visit the CHANGELOG](https://github.com/tenable/Security-Hub/blob/master/CHANGELOG.md)

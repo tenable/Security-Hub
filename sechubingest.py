@@ -108,16 +108,16 @@ class SecurityHubIngester(object):
             'aws_availability_zone',
             'aws_ec2_instance_ami_id',
             'aws_ec2_instance_group_name',
-			'aws_ec2_instance_id',
+            'aws_ec2_instance_id',
             'aws_ec2_instance_state_name',
             'aws_ec2_instance_type',
             'aws_ec2_name', 
-			'aws_ec2_product_code',
+            'aws_ec2_product_code',
             'aws_owner_id',
             'aws_region',
             'aws_subnet_id',
             'aws_vpc_id', 
-			'azure_resource_id',
+            'azure_resource_id',
             'ipv4s',
             'ipv6s',
         ]
@@ -249,13 +249,13 @@ class SecurityHubIngester(object):
             if trimmed:
                 self._assets[asset['id']] = trimmed
         self._log.info('completed asset collection and discovered {} assets'.format(
-            len(trimmed)))
+            len(self._assets)))
         
         # If no assets were collected, then there is no reason to process any
         # of the vulnerability data.  Throw a log stating that there isn't
         # anything for us to do and bail.
-        if len(trimmed) < 1:
-            self._log.info('no assets were collected, refusing to continue')
+        if len(self._assets) < 1:
+            self._log.info('no assets were collected, refusing to continue ingest')
             return
 
         # Initiate an export of the vulnerability data.  Each vuln will be sent
@@ -296,6 +296,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size',
         dest='batch_size',
         help='Size of the batches to populate into Security Hub',
+        type=int,
         default=100)
     parser.add_argument('--aws-region',
         dest='aws_region',
@@ -322,6 +323,11 @@ if __name__ == '__main__':
         help='The unix timestamp of the age threshold',
         type=int,
         default=os.getenv('OBSERVED_SINCE'))
+    parser.add_argument('--run-every',
+        dest='run_every',
+        help='How many hours between recurring imports',
+        type=int,
+        default=os.getenv('RUN_EVERY')) 
     args = parser.parse_args()
 
     # If no log level is set, then lets set to the default of "warn"
@@ -340,7 +346,7 @@ if __name__ == '__main__':
         'error': logging.ERROR,
         'crit': logging.CRITICAL,
     }
-    logging.basicConfig(level=log_levels[args.log_level])
+    logging.basicConfig(level=log_levels[args.log_level.lower()])
 
     if (not args.tio_access_key
      or not args.tio_secret_key 
@@ -366,3 +372,18 @@ if __name__ == '__main__':
         hub = SecurityHubIngester(args.aws_region, args.aws_account_id, tio,
             args.aws_access_id, args.aws_secret_key)
         hub.ingest(args.observed_since, args.batch_size)
+
+        # If we are expected to continually re-run the transformer, then we will
+        # need to track the passage of time and run every X hours, where X is
+        # defined by the user.
+        if args.run_every and args.run_every > 0:
+            import time
+            while True:
+                sleeper = args.run_every * 3600
+                last_run = int(time.time())
+                logging.info(
+                    'Sleeping for {}s before next iteration'.format(sleeper))
+                time.sleep(sleeper)
+                logging.info(
+                    'Initiating ingest with observed_since={}'.format(last_run))
+                hub.ingest(last_run, args.batch_size)
