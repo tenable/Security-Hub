@@ -62,5 +62,45 @@ optional arguments:
                         How many hours between recurring imports
 ```
 
+### Usage
+
+Run the import once:
+
+```
+./sechubingest.py                       \
+    --tio-access-key {TIO_ACCESS_KEY}   \
+    --tio-secret-key {TIO_SECRET_KEY}   \
+    --aws-region us-east-1              \
+    --aws-account-id {AWS_ACCOUNT_ID}   \
+    --aws-access-id {AWS_ACCESS_ID}     \
+    --aws-secret-key {AWS_SECRET_KEY}   \
+```
+
+Run the import once an hour:
+
+```
+./sechubingest.py                       \
+    --tio-access-key {TIO_ACCESS_KEY}   \
+    --tio-secret-key {TIO_SECRET_KEY}   \
+    --aws-region us-east-1              \
+    --aws-account-id {AWS_ACCOUNT_ID}   \
+    --aws-access-id {AWS_ACCESS_ID}     \
+    --aws-secret-key {AWS_SECRET_KEY}   \
+    --run-every 1
+```
+
+Run the same import using environment vars:
+
+```
+export TIO_ACCESS_KEY="{TIO_ACCESS_KEY}"
+export TIO_SECRET_KEY="{TIO_SECRET_KEY}"
+export AWS_REGION="us-east-1"
+export AWS_ACCOUNT_ID="{AWS_ACCOUNT_ID}"
+export AWS_ACCESS_ID="{AWS_ACCESS_ID}"
+export AWS_SECRET_KEY="{AWS_SECRET_KEY}"
+export RUN_EVERY=1
+./sechubingest.py
+```
+
 ### Changelog
 [Visit the CHANGELOG](https://github.com/tenable/Security-Hub/blob/master/CHANGELOG.md)
