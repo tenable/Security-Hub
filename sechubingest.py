@@ -152,6 +152,10 @@ class SecurityHubIngester(object):
         Returns:
             dict: Amazon SecurityHub formatted finding
         '''
+        # A severity mapping to convert the 5 point severity scale into a
+        # number.  This should only be used if the CVSS scoring fails.
+        sevmap = {0: 0, 1: 3, 2: 5, 3: 7, 4: 10}
+
         now = arrow.utcnow()
         asset = self._assets[vuln.get('asset').get('uuid')]
 
@@ -198,8 +202,10 @@ class SecurityHubIngester(object):
             'CreatedAt': now.isoformat(),
             'UpdatedAt': now.isoformat(),
             'Severity': {
-                'Product': vuln.get('plugin').get('cvss_base_score', 0),
-                'Normalized': int(vuln.get('plugin').get('cvss_base_score', 0) * 10),
+                'Product': vuln.get('plugin').get('cvss_base_score', 
+                                sevmap[vuln.get('severity_default_id', 0)]),
+                'Normalized': int(vuln.get('plugin').get('cvss_base_score', 
+                                sevmap[vuln.get('severity_default_id', 0)]) * 10),
             },
             'Title': trunc(vuln.get('plugin').get('name'), 256),
             'Description': trunc(vuln.get('plugin').get('description'), 1024),
