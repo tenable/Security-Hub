@@ -1,33 +1,106 @@
-# tenableio2securityhub
-A python script for sending vulnerabilities from Tenable.io to AWS SecurityHub.
+# Tenable.io -> AWS Security Hub Transformer
 
-### Installation
-```
-pip install boto3 requests
+This tool is designed to consume Tenable.io asset and vulnerability data,
+transform that data into the AWS Security Hub Finding format, and then upload
+the resulting data into AWS Security Hub.
+
+The tool can be run as either a one-shot docker container or as a command-line
+tool.  To run as a docker image, you'll need to build the image and then pass
+the necessary secrets on to the container.
+
+To run as a command-line tool, you'd need to install the required python modules
+and then can run the tool using either environment variables or by passing the
+required parameters as run-time parameters.
+
+### Building for Docker
+
+```shell
+docker build -t tio2sechub:latest .
 ```
 
-### Python Version
-3.7+
+### Installing Python Requirements
+```shell
+pip install -r requirements.txt
+```
 
 ### Configuration
-In order to use this script, you must first Subscribe to Tenable.io as a provider in AWS SecurityHub.
-
-Once subscribed, update the following setting in the script with your [AWS Account ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/console_account-alias.html#FindingYourAWSId):
-
-    AWS_ACCOUNT_ID = '<YOUR_ACCOUNT_ID>'
-
-Next, update the following setting with your [AWS Region](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html):
-
-    AWS_REGION = '<YOUR_AWS_REGION>'
-
-Then, update the following settings with your [Tenable.io](https://cloud.tenable.com/) API keys:
-
-    ACCESS_KEY = '<YOUR_ACCESS_KEY>'
-    SECRET_KEY = '<YOUR_SECRET_KEY>'
-
-### Run the script
-Once configuration is complete, run the following command and--upon completion--you will see vulnerabilities from Tenable.io appear in your SecurityHub findings.
+The following below details both the command-line arguments as well as the 
+equivalent environment variables.
 
 ```
-./python3 tenableio2securityhub.py
+usage: sechubingest.py [-h] [--tio-access-key TIO_ACCESS_KEY]
+                       [--tio-secret-key TIO_SECRET_KEY]
+                       [--batch-size BATCH_SIZE] [--aws-region AWS_REGION]
+                       [--aws-account-id AWS_ACCOUNT_ID]
+                       [--aws-access-id AWS_ACCESS_ID]
+                       [--aws-secret-key AWS_SECRET_KEY]
+                       [--log-level LOG_LEVEL] [--since OBSERVED_SINCE]
+                       [--run-every RUN_EVERY]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --tio-access-key TIO_ACCESS_KEY
+                        Tenable.io Access Key
+  --tio-secret-key TIO_SECRET_KEY
+                        Tenable.io Secret Key
+  --batch-size BATCH_SIZE
+                        Size of the batches to populate into Security Hub
+  --aws-region AWS_REGION
+                        AWS region for Security Hub
+  --aws-account-id AWS_ACCOUNT_ID
+                        AWS Account ID
+  --aws-access-id AWS_ACCESS_ID
+                        AWS Access ID
+  --aws-secret-key AWS_SECRET_KEY
+                        AWS Secret Key
+  --log-level LOG_LEVEL
+                        Log level: available levels are debug, info, warn,
+                        error, crit
+  --since OBSERVED_SINCE
+                        The unix timestamp of the age threshold
+  --run-every RUN_EVERY
+                        How many hours between recurring imports
 ```
+
+### Usage
+
+Run the import once:
+
+```
+./sechubingest.py                       \
+    --tio-access-key {TIO_ACCESS_KEY}   \
+    --tio-secret-key {TIO_SECRET_KEY}   \
+    --aws-region us-east-1              \
+    --aws-account-id {AWS_ACCOUNT_ID}   \
+    --aws-access-id {AWS_ACCESS_ID}     \
+    --aws-secret-key {AWS_SECRET_KEY}   \
+```
+
+Run the import once an hour:
+
+```
+./sechubingest.py                       \
+    --tio-access-key {TIO_ACCESS_KEY}   \
+    --tio-secret-key {TIO_SECRET_KEY}   \
+    --aws-region us-east-1              \
+    --aws-account-id {AWS_ACCOUNT_ID}   \
+    --aws-access-id {AWS_ACCESS_ID}     \
+    --aws-secret-key {AWS_SECRET_KEY}   \
+    --run-every 1
+```
+
+Run the same import using environment vars:
+
+```
+export TIO_ACCESS_KEY="{TIO_ACCESS_KEY}"
+export TIO_SECRET_KEY="{TIO_SECRET_KEY}"
+export AWS_REGION="us-east-1"
+export AWS_ACCOUNT_ID="{AWS_ACCOUNT_ID}"
+export AWS_ACCESS_ID="{AWS_ACCESS_ID}"
+export AWS_SECRET_KEY="{AWS_SECRET_KEY}"
+export RUN_EVERY=1
+./sechubingest.py
+```
+
+### Changelog
+[Visit the CHANGELOG](https://github.com/tenable/Security-Hub/blob/master/CHANGELOG.md)

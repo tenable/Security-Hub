@@ -1,0 +1,3 @@
+arrow>=0.13.0
+boto3>=1.9.80
+pyTenable>=0.3.8
