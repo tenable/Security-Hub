@@ -157,6 +157,12 @@ class SecurityHubIngester(object):
         # A severity mapping to convert the 5 point severity scale into a
         # number.  This should only be used if the CVSS scoring fails.
         sevmap = {0: 0, 1: 3, 2: 5, 3: 7, 4: 10}
+        state = {
+            'OPEN': 'ACTIVE',
+            'NEW': 'ACTIVE',
+            'REOPENED': 'ACTIVE',
+            'FIXED': 'ARCHIVED'
+        }
 
         now = arrow.utcnow()
         asset = self._assets[vuln.get('asset').get('uuid')]
@@ -227,7 +233,7 @@ class SecurityHubIngester(object):
             },
             'SourceUrl': uri,
             'Remediation': {'Recommendation': remediation},
-            'RecordState': 'ACTIVE'
+            'RecordState': state[vuln['state']]
         }
     
     def ingest(self, observed_since, batch_size=None, severities=None):
@@ -280,14 +286,20 @@ class SecurityHubIngester(object):
         # the transforms list.
         self._log.info('initiating vuln ingest and transformation')
         transforms = list()
-        vulns = self._tio.exports.vulns(since=observed_since, severity=severities)        
-        for vuln in vulns:
-            if vuln.get('asset').get('uuid') in self._assets.keys():
-                transforms.append(self._transform_finding(vuln))
-            if len(transforms) >= batch_size:
-                self._sechub.batch_import_findings(Findings=transforms)
-                transforms = list()
-        self._log.info('completed processing {} vulns'.format(vulns.count))
+        openvulns = self._tio.exports.vulns(last_updated=observed_since, 
+            severity=severities, state=['open', 'reopened'])
+        fixedvulns = self._tio.exports.vulns(last_fixed=observed_since,
+            severity=severities, state=['fixed'])
+             
+        for export in [openvulns, fixedvulns]:
+            for vuln in export:
+                if vuln.get('asset').get('uuid') in self._assets.keys():
+                    transforms.append(self._transform_finding(vuln))
+                if len(transforms) >= batch_size:
+                    self._sechub.batch_import_findings(Findings=transforms)
+                    transforms = list()
+        self._log.info('completed processing {} active and {} fixed vulns'.format(
+            openvulns.count, fixedvulns.count))
         
         # If there are any remaining vulnerabilities in a left-over batch, then
         # we should shoot them into Amazon.
