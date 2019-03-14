@@ -26,6 +26,8 @@ from tenable.io import TenableIO
 from tenable.errors import TenableException
 import boto3, arrow, logging, os
 
+__version__ = '0.1.1'
+
 
 def trunc(text, limit):
     '''
@@ -228,7 +230,7 @@ class SecurityHubIngester(object):
             'RecordState': 'ACTIVE'
         }
     
-    def ingest(self, observed_since, batch_size=None):
+    def ingest(self, observed_since, batch_size=None, severities=None):
         '''
         Perform the ingestion
 
@@ -239,9 +241,15 @@ class SecurityHubIngester(object):
             batch_size (int, optional):
                 The number of findings to send to Security Hub at a time.  If
                 nothing is specified, it will default to 100.
+            severities (list, optional):
+                The criticalities that should be exported and ingested into AWS.
+                If nothing is specified, then the default is critical.
         '''
         if not batch_size:
             batch_size = 100
+        
+        if not severities:
+            severities = ['critical']
 
         # The first thing that we need to do here is pull down all of the asset
         # data from TenableIO that pertains to AWS and trim it down to just the
@@ -272,7 +280,7 @@ class SecurityHubIngester(object):
         # the transforms list.
         self._log.info('initiating vuln ingest and transformation')
         transforms = list()
-        vulns = self._tio.exports.vulns(since=observed_since)        
+        vulns = self._tio.exports.vulns(since=observed_since, severity=severities)        
         for vuln in vulns:
             if vuln.get('asset').get('uuid') in self._assets.keys():
                 transforms.append(self._transform_finding(vuln))
@@ -329,6 +337,10 @@ if __name__ == '__main__':
         help='The unix timestamp of the age threshold',
         type=int,
         default=os.getenv('OBSERVED_SINCE'))
+    parser.add_argument('--severities',
+        dest='severities',
+        help='What Severities should be ingested? Colon delimited',
+        default='critical')
     parser.add_argument('--run-every',
         dest='run_every',
         help='How many hours between recurring imports',
@@ -353,6 +365,16 @@ if __name__ == '__main__':
         'crit': logging.CRITICAL,
     }
     logging.basicConfig(level=log_levels[args.log_level.lower()])
+    
+    if args.severities.split(':') != ['critical']:
+        print('\n'.join([
+            '=================================================================',
+            '                            WARNING',
+            '=================================================================',
+            ' Specifying a severity other than critical could have negative',
+            ' cost implications within AWS SecurityHub.',
+            '=================================================================',
+        ]))
 
     if (not args.tio_access_key
      or not args.tio_secret_key 
@@ -374,10 +396,13 @@ if __name__ == '__main__':
     else:
         # Initiate the Tenable.io API model, the Ingester model, and start the
         # ingestion and data transformation.
-        tio = TenableIO(args.tio_access_key, args.tio_secret_key)
+        tio = TenableIO(args.tio_access_key, args.tio_secret_key, 
+            ua_identity='Tenio-AWS_SecurityHub v0.1.1')
         hub = SecurityHubIngester(args.aws_region, args.aws_account_id, tio,
             args.aws_access_id, args.aws_secret_key)
-        hub.ingest(args.observed_since, args.batch_size)
+        hub.ingest(args.observed_since, 
+            batch_size=args.batch_size, 
+            severities=args.severities.split(':'))
 
         # If we are expected to continually re-run the transformer, then we will
         # need to track the passage of time and run every X hours, where X is
