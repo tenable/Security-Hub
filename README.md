@@ -30,11 +30,14 @@ equivalent environment variables.
 ```
 usage: sechubingest.py [-h] [--tio-access-key TIO_ACCESS_KEY]
                        [--tio-secret-key TIO_SECRET_KEY]
-                       [--batch-size BATCH_SIZE] [--aws-region AWS_REGION]
+                       [--batch-size BATCH_SIZE] 
+                       [--aws-region AWS_REGION]
                        [--aws-account-id AWS_ACCOUNT_ID]
                        [--aws-access-id AWS_ACCESS_ID]
                        [--aws-secret-key AWS_SECRET_KEY]
-                       [--log-level LOG_LEVEL] [--since OBSERVED_SINCE]
+                       [--log-level LOG_LEVEL] 
+                       [--since OBSERVED_SINCE]
+                       [--severities SEVERITIES]
                        [--run-every RUN_EVERY]
 
 optional arguments:
@@ -56,6 +59,8 @@ optional arguments:
   --log-level LOG_LEVEL
                         Log level: available levels are debug, info, warn,
                         error, crit
+  --severities
+                        What Severities should be ingested? Colon delimited
   --since OBSERVED_SINCE
                         The unix timestamp of the age threshold
   --run-every RUN_EVERY
