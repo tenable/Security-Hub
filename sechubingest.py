@@ -26,7 +26,7 @@ from tenable.io import TenableIO
 from tenable.errors import TenableException
 import boto3, arrow, logging, os
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 def trunc(text, limit):
@@ -37,7 +37,7 @@ def trunc(text, limit):
     Args:
         text (str): The string to truncate
         limit (int): The maximum limit that the string can be.
-    
+
     Returns:
         str: The truncated string
     '''
@@ -64,8 +64,8 @@ class SecurityHubIngester(object):
         account_id (str): The AWS account ID
         tio (TenableIO): The authenticated TenableIO object
         aws_access_id (str, optional): AWS Access Key ID
-        aws_secret_key (str, optional): AWS Secret Access Key 
-    
+        aws_secret_key (str, optional): AWS Secret Access Key
+
     Examples:
         >>> hub = SecurityHubIngester('us-east-1', 'AWS_ACCOUNT_ID', tio)
     '''
@@ -75,7 +75,7 @@ class SecurityHubIngester(object):
     _tio = None
     _log = None
 
-    def __init__(self, region, account_id, tio, 
+    def __init__(self, region, account_id, tio,
                  aws_access_id=None, aws_secret_key=None):
         # Store the logging facility and store
         self._log = logging.getLogger('{}.{}'.format(
@@ -91,14 +91,14 @@ class SecurityHubIngester(object):
         #    raise SecHubError('{} is not a valid AWS region.'.format(region))
         self._region = region
         self._account_id = account_id
-        self._sechub = boto3.client('securityhub', 
+        self._sechub = boto3.client('securityhub',
             region_name=region,
             aws_access_key_id=aws_access_id,
             aws_secret_access_key=aws_secret_key)
 
         # Place the TenableIO object into it's new home.
         self._tio = tio
-    
+
     def _trim_asset(self, asset):
         '''
         Asset data trimmer
@@ -113,12 +113,12 @@ class SecurityHubIngester(object):
             'aws_ec2_instance_id',
             'aws_ec2_instance_state_name',
             'aws_ec2_instance_type',
-            'aws_ec2_name', 
+            'aws_ec2_name',
             'aws_ec2_product_code',
             'aws_owner_id',
             'aws_region',
             'aws_subnet_id',
-            'aws_vpc_id', 
+            'aws_vpc_id',
             'azure_resource_id',
             'ipv4s',
             'ipv6s',
@@ -133,7 +133,7 @@ class SecurityHubIngester(object):
         for key in asset.keys():
             if key in fields:
                 trimmed[key] = asset[key]
-        
+
         # ensure all of the required fields are in the asset.
         for requirement in required:
             if requirement not in trimmed.keys():
@@ -142,7 +142,7 @@ class SecurityHubIngester(object):
                         asset['id'], requirement))
                 return None
         return trimmed
-    
+
     def _transform_finding(self, vuln):
         '''
         Transform a finding from the Tenable.io export format into the Amazon
@@ -150,7 +150,7 @@ class SecurityHubIngester(object):
 
         Args:
             vuln (dict): The Tenable.io vulnerability finding
-        
+
         Returns:
             dict: Amazon SecurityHub formatted finding
         '''
@@ -170,11 +170,11 @@ class SecurityHubIngester(object):
         # Construct the URI that points to the specific vulnerability
         # instance.
         uri = '/'.join([
-            'https://cloud.tenable.com/app.html#/dashboards/workbench/assets', 
+            'https://cloud.tenable.com/app.html#/dashboards/workbench/assets',
             '{}/vulnerabilities/{}'.format(
                 vuln.get('asset').get('uuid'),
                 vuln.get('plugin').get('id'))])
-        
+
         # Build the AwsEc2Instance sub-document
         details = dict()
         if asset.get('aws_ec2_instance_type'):
@@ -185,14 +185,14 @@ class SecurityHubIngester(object):
             details['IpV4Addresses'] = asset.get('ipv4s')
         if len(asset.get('ipv6s')) > 0:
             details['IpV6Addresses'] = asset.get('ipv6s')
-        
+
         # Build the Remediation.Recommendation sub-document
         remediation = dict()
         if vuln.get('plugin').get('solution'):
             remediation['Text'] = vuln.get('plugin').get('solution')
         if vuln.get('plugin').get('see_also'):
             remediation['Url'] = vuln.get('plugin').get('see_also')[0]
-    
+
         return {
             'SchemaVersion': '2018-10-08',
             'FirstObservedAt': vuln.get('first_found'),
@@ -210,10 +210,10 @@ class SecurityHubIngester(object):
             'CreatedAt': now.isoformat(),
             'UpdatedAt': now.isoformat(),
             'Severity': {
-                'Product': vuln.get('plugin').get('cvss_base_score', 
+                'Product': vuln.get('plugin').get('cvss_base_score',
                                 sevmap[vuln.get('severity_default_id', 0)]),
-                'Normalized': int(vuln.get('plugin').get('cvss_base_score', 
-                                sevmap[vuln.get('severity_default_id', 0)]) * 10),
+                'Normalized': int(vuln.get('plugin').get('cvss_base_score',
+                                sevmap[vuln.get('severity_default_id', 0)]) * 4),
             },
             'Title': trunc(vuln.get('plugin').get('name'), 256),
             'Description': trunc(vuln.get('plugin').get('description'), 1024),
@@ -235,13 +235,13 @@ class SecurityHubIngester(object):
             'Remediation': {'Recommendation': remediation},
             'RecordState': state[vuln['state']]
         }
-    
+
     def ingest(self, observed_since, batch_size=None, severities=None):
         '''
         Perform the ingestion
 
         Args:
-            observed_since (int): 
+            observed_since (int):
                 The unix timestamp of the age threshhold.  Only vulnerabilities
                 observed since this date will be imported.
             batch_size (int, optional):
@@ -249,20 +249,21 @@ class SecurityHubIngester(object):
                 nothing is specified, it will default to 100.
             severities (list, optional):
                 The criticalities that should be exported and ingested into AWS.
-                If nothing is specified, then the default is critical.
+                If nothing is specified, then the default is low, medium, high,
+                and critical.
         '''
         if not batch_size:
             batch_size = 100
-        
+
         if not severities:
-            severities = ['critical']
+            severities = ['low', 'medium', 'high', 'critical']
 
         # The first thing that we need to do here is pull down all of the asset
         # data from TenableIO that pertains to AWS and trim it down to just the
         # fields that we need.
         self._assets = dict()
         self._log.info('initiating asset collection')
-        assets = self._tio.exports.assets(sources=['AWS'], 
+        assets = self._tio.exports.assets(sources=['AWS'],
             updated_at=observed_since)
         for asset in assets:
             trimmed = self._trim_asset(asset)
@@ -270,7 +271,7 @@ class SecurityHubIngester(object):
                 self._assets[asset['id']] = trimmed
         self._log.info('completed asset collection and discovered {} assets'.format(
             len(self._assets)))
-        
+
         # If no assets were collected, then there is no reason to process any
         # of the vulnerability data.  Throw a log stating that there isn't
         # anything for us to do and bail.
@@ -286,11 +287,11 @@ class SecurityHubIngester(object):
         # the transforms list.
         self._log.info('initiating vuln ingest and transformation')
         transforms = list()
-        openvulns = self._tio.exports.vulns(last_updated=observed_since, 
+        openvulns = self._tio.exports.vulns(last_updated=observed_since,
             severity=severities, state=['open', 'reopened'])
         fixedvulns = self._tio.exports.vulns(last_fixed=observed_since,
             severity=severities, state=['fixed'])
-             
+
         for export in [openvulns, fixedvulns]:
             for vuln in export:
                 if vuln.get('asset').get('uuid') in self._assets.keys():
@@ -300,7 +301,7 @@ class SecurityHubIngester(object):
                     transforms = list()
         self._log.info('completed processing {} active and {} fixed vulns'.format(
             openvulns.count, fixedvulns.count))
-        
+
         # If there are any remaining vulnerabilities in a left-over batch, then
         # we should shoot them into Amazon.
         if len(transforms) > 0:
@@ -357,27 +358,27 @@ if __name__ == '__main__':
         dest='run_every',
         help='How many hours between recurring imports',
         type=int,
-        default=os.getenv('RUN_EVERY')) 
+        default=os.getenv('RUN_EVERY'))
     args = parser.parse_args()
 
     # If no log level is set, then lets set to the default of "warn"
     if not args.log_level:
         args.log_level = 'warn'
-    
+
     # if no age is set, then lets set the default to 0.
     if not args.observed_since:
         args.observed_since = 0
 
     # Setup the logging for the output of the script.
     log_levels = {
-        'debug': logging.DEBUG, 
+        'debug': logging.DEBUG,
         'info': logging.INFO,
         'warn': logging.WARNING,
         'error': logging.ERROR,
         'crit': logging.CRITICAL,
     }
     logging.basicConfig(level=log_levels[args.log_level.lower()])
-    
+
     if args.severities.split(':') != ['critical']:
         print('\n'.join([
             '=================================================================',
@@ -389,7 +390,7 @@ if __name__ == '__main__':
         ]))
 
     if (not args.tio_access_key
-     or not args.tio_secret_key 
+     or not args.tio_secret_key
      or not args.aws_region
      or not args.aws_account_id):
         # If we hit this statement, then one or more required attributes haven't
@@ -408,12 +409,12 @@ if __name__ == '__main__':
     else:
         # Initiate the Tenable.io API model, the Ingester model, and start the
         # ingestion and data transformation.
-        tio = TenableIO(args.tio_access_key, args.tio_secret_key, 
+        tio = TenableIO(args.tio_access_key, args.tio_secret_key,
             ua_identity='Tenio-AWS_SecurityHub v0.1.1')
         hub = SecurityHubIngester(args.aws_region, args.aws_account_id, tio,
             args.aws_access_id, args.aws_secret_key)
-        hub.ingest(args.observed_since, 
-            batch_size=args.batch_size, 
+        hub.ingest(args.observed_since,
+            batch_size=args.batch_size,
             severities=args.severities.split(':'))
 
         # If we are expected to continually re-run the transformer, then we will
