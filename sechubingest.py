@@ -2,7 +2,7 @@
 '''
 MIT License
 
-Copyright (c) 2018 Tenable Network Security, Inc.
+Copyright (c) 2019 Tenable Network Security, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ from tenable.io import TenableIO
 from tenable.errors import TenableException
 import boto3, arrow, logging, os
 
-__version__ = '0.1.2'
+__version__ = '1.0.0'
 
 
 def trunc(text, limit):
@@ -379,16 +379,6 @@ if __name__ == '__main__':
     }
     logging.basicConfig(level=log_levels[args.log_level.lower()])
 
-    if args.severities.split(':') != ['critical']:
-        print('\n'.join([
-            '=================================================================',
-            '                            WARNING',
-            '=================================================================',
-            ' Specifying a severity other than critical could have negative',
-            ' cost implications within AWS SecurityHub.',
-            '=================================================================',
-        ]))
-
     if (not args.tio_access_key
      or not args.tio_secret_key
      or not args.aws_region
@@ -410,7 +400,9 @@ if __name__ == '__main__':
         # Initiate the Tenable.io API model, the Ingester model, and start the
         # ingestion and data transformation.
         tio = TenableIO(args.tio_access_key, args.tio_secret_key,
-            ua_identity='Tenio-AWS_SecurityHub v0.1.1')
+            vendor='Tenable',
+            product='AWSSechub',
+            build=__version__)
         hub = SecurityHubIngester(args.aws_region, args.aws_account_id, tio,
             args.aws_access_id, args.aws_secret_key)
         hub.ingest(args.observed_since,
