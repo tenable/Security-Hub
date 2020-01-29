@@ -64,6 +64,9 @@ optional arguments:
                         AWS Access ID
   --aws-secret-key AWS_SECRET_KEY
                         AWS Secret Key
+  --aws-accounts
+                        Delimited list of AWS accounts you want only to ingest findings from. 
+                        Default behavior will ingest findings from all accounts.
   --log-level LOG_LEVEL
                         Log level: available levels are debug, info, warn,
                         error, crit

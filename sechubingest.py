@@ -76,7 +76,7 @@ class SecurityHubIngester(object):
     _log = None
 
     def __init__(self, region, account_id, tio,
-                 aws_access_id=None, aws_secret_key=None):
+                 aws_access_id=None, aws_secret_key=None, aws_accounts=[]):
         # Store the logging facility and store
         self._log = logging.getLogger('{}.{}'.format(
             self.__module__, self.__class__.__name__))
@@ -91,6 +91,7 @@ class SecurityHubIngester(object):
         #    raise SecHubError('{} is not a valid AWS region.'.format(region))
         self._region = region
         self._account_id = account_id
+        self._aws_accounts = list(set([self._account_id] + aws_accounts)) if aws_accounts else None
         self._sechub = boto3.client('securityhub',
             region_name=region,
             aws_access_key_id=aws_access_id,
@@ -128,6 +129,14 @@ class SecurityHubIngester(object):
             'aws_region',
         ]
         trimmed = dict()
+
+        # only ingest regional assets. security hub is regional service.
+        if asset.get('aws_region') != self._region:
+            return None
+
+        # only ingest specified aws accounts.
+        if self._aws_accounts and asset.get('aws_owner_id') not in self._aws_accounts:
+            return None
 
         # populate the trimmed asset.
         for key in asset.keys():
@@ -199,7 +208,7 @@ class SecurityHubIngester(object):
             'LastObservedAt': vuln.get('last_found'),
             'ProductArn': 'arn:aws:securityhub:{}:{}:{}'.format(
                 self._region, '422820575223', 'product/tenable/tenable-io'),
-            'AwsAccountId': self._account_id,
+            'AwsAccountId': asset.get('aws_owner_id'),
             'GeneratorId': 'tenable-plugin-{}'.format(
                 vuln.get('plugin').get('id')),
             'Id': '{}/{}/{}'.format(
@@ -221,7 +230,7 @@ class SecurityHubIngester(object):
                 'Type': 'AwsEc2Instance',
                 'Id': 'arn:aws:ec2:{}:{}:instance:{}'.format(
                     asset.get('aws_region'),
-                    self._account_id,
+                    asset.get('aws_owner_id'),
                     asset.get('aws_ec2_instance_id')),
                 'Region': asset.get('aws_region'),
                 'Details': {'AwsEc2Instance': details},
@@ -359,6 +368,11 @@ if __name__ == '__main__':
         help='How many hours between recurring imports',
         type=int,
         default=os.getenv('RUN_EVERY'))
+    parser.add_argument('--aws-accounts',
+        dest='aws_accounts',
+        help='delimited list input of AWS accounts you want to ingest findings from',
+        type=str,
+        default=[])
     args = parser.parse_args()
 
     # If no log level is set, then lets set to the default of "warn"
@@ -397,6 +411,8 @@ if __name__ == '__main__':
             'AWS Secret Access Key: {}'.format('SET' if args.aws_secret_key else 'NOT SET'),
         ]))
     else:
+        if args.aws_accounts:
+            args.aws_accounts = [str(item) for item in args.aws_accounts.split(',')]
         # Initiate the Tenable.io API model, the Ingester model, and start the
         # ingestion and data transformation.
         tio = TenableIO(args.tio_access_key, args.tio_secret_key,
@@ -404,7 +420,7 @@ if __name__ == '__main__':
             product='AWSSechub',
             build=__version__)
         hub = SecurityHubIngester(args.aws_region, args.aws_account_id, tio,
-            args.aws_access_id, args.aws_secret_key)
+            args.aws_access_id, args.aws_secret_key, args.aws_accounts)
         hub.ingest(args.observed_since,
             batch_size=args.batch_size,
             severities=args.severities.split(':'))

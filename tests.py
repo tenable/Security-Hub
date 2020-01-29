@@ -155,13 +155,13 @@ def vulnerability():
 @pytest.fixture
 def sechub():
     return SecurityHubIngester(
-        region=os.getenv('AWS_REGION'),
-        account_id=os.getenv('AWS_ACCOUNT_ID'),
+        region='us-east-1',
+        account_id='600832220000',
         tio=TenableIO(
-            os.getenv('TIO_TEST_ACCESS_KEY'),
-            os.getenv('TIO_TEST_SECRET_KEY')),
-        aws_access_id=os.getenv('AWS_ACCESS_ID'),
-        aws_secret_key=os.getenv('AWS_SECRET_KEY'),
+            'TIO_TEST_ACCESS_KEY',
+            'TIO_TEST_SECRET_KEY'),
+        aws_access_id='AWS_ACCESS_ID',
+        aws_secret_key='AWS_SECRET_KEY'
     )
 
 def test_asset_trimming(sechub, asset):
@@ -193,18 +193,18 @@ def test_transform_finding(sechub, asset, vulnerability):
     assert f['FirstObservedAt'] == '2018-03-22T13:29:22.070Z'
     assert f['LastObservedAt'] == '2018-12-14T12:07:38.155Z'
     assert f['ProductArn'] == 'arn:aws:securityhub:us-east-1:422820575223:product/tenable/tenable-io'
-    assert f['AwsAccountId'] == 'abcdef'
+    assert f['AwsAccountId'] == '600832220000'
     assert f['GeneratorId'] == 'tenable-plugin-106875'
     assert f['Id'] == 'us-east-1/i-00f9e618482900000/106875'
     assert f['Types'] == ['Software and Configuration Checks/Vulnerabilities/CVE']
     assert f['CreatedAt']
     assert f['UpdatedAt']
     assert f['Severity']['Product'] == 7
-    assert f['Severity']['Normalized'] == 70
+    assert f['Severity']['Normalized'] == 28
     assert f['Title'] == 'Debian DSA-4117-1 : gcc-4.9 - security update'
     assert isinstance(f['Description'], str)
     assert f['Resources'][0]['Type'] == 'AwsEc2Instance'
-    assert f['Resources'][0]['Id'] == 'arn:aws:ec2:us-east-1:abcdef:instance:i-00f9e618482900000'
+    assert f['Resources'][0]['Id'] == 'arn:aws:ec2:us-east-1:600832220000:instance:i-00f9e618482900000'
     assert f['Resources'][0]['Region'] == 'us-east-1'
     assert f['Resources'][0]['Details']['AwsEc2Instance']['Type'] == 't2.medium'
     assert f['Resources'][0]['Details']['AwsEc2Instance']['ImageId'] == 'ami-daf89000'
@@ -220,4 +220,4 @@ def test_transform_finding(sechub, asset, vulnerability):
     vulnerability['plugin']['cvss_base_score'] = 6.2
     m = sechub._transform_finding(vulnerability)
     assert m['Severity']['Product'] == 6.2
-    assert m['Severity']['Normalized'] == 62
+    assert m['Severity']['Normalized'] == 24
