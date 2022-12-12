@@ -26,7 +26,7 @@ from tenable.io import TenableIO
 from restfly.errors import RestflyException as TenableException
 import boto3, arrow, logging, os, json
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 def trunc(text, limit):
