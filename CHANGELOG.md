@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Security update
+- Fix security vulnerability on code and test case
+- Rebased the code
 
 ## [0.1.1]
 
