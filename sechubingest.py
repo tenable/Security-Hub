@@ -222,7 +222,7 @@ class SecurityHubIngester(object):
                 'Type': 'AwsEc2Instance',
                 'Id': 'arn:aws:ec2:{}:{}:instance:{}'.format(
                     asset.get('aws_region'),
-                    self._account_id,
+                    asset.get('aws_owner_id'),
                     asset.get('aws_ec2_instance_id')),
                 'Region': asset.get('aws_region'),
                 'Details': {'AwsEc2Instance': details},
