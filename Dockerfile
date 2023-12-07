@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.11.7-alpine
 
 ENV TIO_ACCESS_KEY ""
 ENV TIO_SECRET_KEY ""
