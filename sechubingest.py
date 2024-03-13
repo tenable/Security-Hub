@@ -131,12 +131,12 @@ class SecurityHubIngester(object):
 
         # populate the trimmed asset.
         for key in asset.keys():
-            if key in fields and asset[key]:
+            if key in fields:
                 trimmed[key] = asset[key]
 
         # ensure all of the required fields are in the asset.
         for requirement in required:
-            if requirement not in trimmed.keys():
+            if requirement not in trimmed.keys() or asset[requirement] is None:
                 self._log.debug(
                     'ignoring asset {} as it is missing required field {}'.format(
                         asset['id'], requirement))
