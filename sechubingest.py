@@ -131,7 +131,7 @@ class SecurityHubIngester(object):
 
         # populate the trimmed asset.
         for key in asset.keys():
-            if key in fields:
+            if key in fields and asset[key]:
                 trimmed[key] = asset[key]
 
         # ensure all of the required fields are in the asset.
@@ -269,7 +269,7 @@ class SecurityHubIngester(object):
         # fields that we need.
         self._assets = dict()
         self._log.info('initiating asset collection')
-        assets = self._tio.exports.assets(sources=['AWS'],
+        assets = self._tio.exports.assets(sources=['CloudDiscoveryConnector'],
             updated_at=observed_since)
         for asset in assets:
             trimmed = self._trim_asset(asset)
