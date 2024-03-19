@@ -134,6 +134,11 @@ class SecurityHubIngester(object):
             if key in fields:
                 trimmed[key] = asset[key]
 
+        # Check if any aws key is set, if not dont process it and return None
+        aws_fields = {k: v for k, v in trimmed.items() if k.startswith('aws')}
+        if any(aws_fields.values()) is False:
+            return None
+
         # ensure all of the required fields are in the asset.
         for requirement in required:
             if requirement not in trimmed.keys() or asset[requirement] is None:
