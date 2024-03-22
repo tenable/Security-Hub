@@ -134,9 +134,14 @@ class SecurityHubIngester(object):
             if key in fields:
                 trimmed[key] = asset[key]
 
+        # Check if any aws key is set, if not dont process it and return None
+        aws_fields = {k: v for k, v in trimmed.items() if k.startswith('aws')}
+        if any(aws_fields.values()) is False:
+            return None
+
         # ensure all of the required fields are in the asset.
         for requirement in required:
-            if requirement not in trimmed.keys():
+            if requirement not in trimmed.keys() or asset[requirement] is None:
                 self._log.debug(
                     'ignoring asset {} as it is missing required field {}'.format(
                         asset['id'], requirement))
@@ -269,7 +274,7 @@ class SecurityHubIngester(object):
         # fields that we need.
         self._assets = dict()
         self._log.info('initiating asset collection')
-        assets = self._tio.exports.assets(sources=['AWS'],
+        assets = self._tio.exports.assets(sources=['CloudDiscoveryConnector'],
             updated_at=observed_since)
         for asset in assets:
             trimmed = self._trim_asset(asset)
