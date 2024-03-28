@@ -1,0 +1,34 @@
+# The AWS region and account id that SecurityHub is running in.  The region
+# will be pulled from AWS if left unspecified.
+# aws_region = "us-east-1"
+aws_account_id =
+
+# The Tenable.io API Access and secret Keys.  If left unspecified, the API
+# keys will be pulled from the environment variables
+# TIO_ACCESS_KEY
+# TIO_SECRET_KEY
+# access_key = "1234567890abcdef1234567890"
+# secret_key = "1234567890abcdef1234567890"
+
+# If a non-standard URL is required to accesss TVM (such as govcloud), then
+# uncomment and modify as appropriate.
+# tvm_url = "https://cloud.tenable.com"
+
+# The number of findings to import at a time to Security Hub.
+# batch_size = 100
+
+# The TVM finding states to pull from the vulnerability exports APIs.
+# states = ["open", "reopened", "fixed"]
+
+# The TVM asset sources to use for generating SecurityHub findings.  Please
+# note that if the AWS asset attributes are not populated, then the finding
+# will not be uploaded.
+# sources = ["CloudDiscoveryConnector"]
+
+# The TVM Severity ratings to pull from the vulnerability exports APIs.
+# severity = ["high", "critical"]
+
+# The since parameter dictates how far back to pull assets and vulnerabilities
+# from.  Please note that the integration will automatically update this
+# parameter after every run.
+# since = 0

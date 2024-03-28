@@ -1,0 +1,7 @@
+/tvm2aws-test.toml
+__pycache__
+tenable_aws_sechub.egg-info
+/.python-version
+/.nova
+/.DS_Store
+/.coverage
