@@ -1,3 +1,4 @@
 arrow>=0.13.0
 boto3>=1.9.80
 pyTenable>=1.0.0
+requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
