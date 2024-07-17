@@ -144,8 +144,8 @@ class Finding:
                 'Recommendation': {
 
                     # The solution cannot exceed 1024 characters in length.
-                    'Text': trunc(vuln['plugin.solution'], 1024),
-                    'Url': vuln.get('plugin.see_also')[0]
+                    'Text': trunc(vuln['plugin.solution'], 512),
+                    'Url': vuln.get('plugin.see_also', [])[0]
                 }
             },
             'RecordState': STATE_MAP[vuln['state']]
