@@ -1,0 +1,56 @@
+[build-system]
+requires        = ["setuptools"]
+build-backend   = "setuptools.build_meta"
+
+[project]
+dynamic         = ["version", "readme"]
+name            = "tenable_aws_sechub"
+description     = "Tenable Vulnerability Management to AWS Security Hub"
+authors         = [
+ {name = "Tenable, Inc.", email = "smcgrath@tenable.com" }
+]
+keywords        = [
+    "tenable",
+    "tenable vulnerability management",
+    "tenable security center",
+    "tenable.io",
+    "tenable.sc",
+    "aws",
+    "security hub"
+]
+license = {text = "MIT License"}
+classifiers     = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
+    "Topic :: System :: Systems Administration",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+dependencies    = [
+    "arrow>=1.3.0",
+    "restfly>=1.4.5",
+    "typer>=0.9.0",
+    "tomlkit>=0.12.4",
+    "rich>=13.3.1",
+    "boto3>=1.34.68",
+    "pytenable>=1.5.0",
+]
+
+[project.urls]
+Homepage        = "https://github.com/tenable/Security-Hub"
+Repository      = "https://github.com/tenable/Security-Hub"
+Issues          = "https://github.com/tenable/Security-Hub/issues"
+Changelog       = "https://github.com/tenable/Security-Hub/blob/main/CHANGELOG.md"
+
+[project.scripts]
+tenb2jira       = "tenable_aws_sechub.cli:app"
+
+[tool.setuptools.dynamic]
+version = {attr = "tenable_aws_sechub.version.version"}
+readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+include         = ["tenable_aws_sechub*"]
+

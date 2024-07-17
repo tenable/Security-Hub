@@ -24,7 +24,7 @@ the config file to the container.
 ## Installation
 
 ```
-pip install tvm2aws
+pip install tenable_aws_sechub
 ```
 
 ## Upgrading from v1
