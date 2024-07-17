@@ -1,5 +1,8 @@
 # Tenable Vulnerability Management to AWS Transformer
 
+| :exclamation: | If upgrading from v1 please read the upgrade section |
+| --------------|:---------------------------------------------------- |
+
 This tool is designed to consume Tenable.io asset and vulnerability data,
 transform that data into the AWS Security Hub Finding format, and then upload
 the resulting data into AWS Security Hub.
@@ -24,6 +27,16 @@ the config file to the container.
 pip install tvm2aws
 ```
 
+## Upgrading from v1
+
+If you are upgrading from the original version of the integration, please note
+that there are some additional steps that need to be taken as the ARN that is
+used has changed.
+
+1. Disable the Tenable.io SecurityHub integration
+2. Enable the Tenable Vulnerability Management integration
+3. Configure and run the updated integration (this code)
+
 ## Configuration
 
 Simply build a configuration file (or use the [example file][cfg] provided)
@@ -35,6 +48,14 @@ aws_region = "us-east-1"
 access_key = "1234567890abcdef1234567890"
 secret_key = "1234567890abcdef1234567890"
 ```
+
+Once the configuration file is saved, go ahead and ensure that the AWS CLI can
+communicate to AWS, or generate the appropriate configuration parameters that
+AWS needs for their boto3 client.  Details for how to do this is documented
+below:
+
+1. [Boto3 Configuration](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration)
+2. [AWS CLI Config](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
 
 ## Running the integration
 
