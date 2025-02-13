@@ -2,6 +2,7 @@
 The findings module handles transforming a TVM vulnerability finding into an
 AWS Security Hub finding.
 """
+
 from typing import Dict
 from restfly.utils import dict_flatten, dict_clean, trunc
 import arrow
@@ -12,7 +13,7 @@ STATE_MAP = {
     'OPEN': 'ACTIVE',
     'NEW': 'ACTIVE',
     'REOPENED': 'ACTIVE',
-    'FIXED': 'ARCHIVED'
+    'FIXED': 'ARCHIVED',
 }
 
 
@@ -20,6 +21,7 @@ class Finding:
     """
     Security Hub Finding transformer
     """
+
     region: str
     account_id: str
     start_date: str
@@ -45,16 +47,19 @@ class Finding:
             'asset.aws_ec2_instance_id',
             'asset.aws_owner_id',
             'asset.aws_ec2_instance_type',
-            'asset.aws_ec2_instance_ami_id'
+            'asset.aws_ec2_instance_ami_id',
         ]
         failed = []
         for attr in required_attributes:
             if vuln.get(attr) is None:
                 failed.append(attr)
         if failed:
-            raise KeyError((f'The required asset attributes {",".join(failed)}'
-                            f' were not set on asset {vuln["asset.uuid"]}'
-                            ))
+            raise KeyError(
+                (
+                    f'The required asset attributes {",".join(failed)}'
+                    f' were not set on asset {vuln["asset.uuid"]}'
+                )
+            )
 
     def generate(self, vuln: Dict) -> Dict:
         """
@@ -77,25 +82,27 @@ class Finding:
         # and lastly fall back to the severity_default_id.
         # FIXME: I don't really like how this nested fallback looks, and I feel
         #        there has to be a cleaner way to implement.
-        base_score = vuln.get('plugin.cvss3_base_score',
-                              vuln.get('plugin.cvss_base_score',
-                                       SEV_MAP[vuln.get('severity_default_id',
-                                                        0
-                                                        )]))
+        base_score = vuln.get(
+            'plugin.cvss3_base_score',
+            vuln.get(
+                'plugin.cvss_base_score', SEV_MAP[vuln.get('severity_default_id', 0)]
+            ),
+        )
 
         finding = {
             'SchemaVersion': '2018-10-08',
             'FirstObservedAt': vuln['first_found'],
             'LastObservedAt': vuln['last_found'],
-            'ProductArn': (f'arn:aws:securityhub:'
-                           f'{self.region}::product/tenable/tenable-io'
-                           ),
+            'ProductArn': (
+                f'arn:aws:securityhub:{self.region}::product/tenable/tenable-io'
+            ),
             'AwsAccountId': self.account_id,
             'GeneratorId': f'tenable-plugin-{vuln["plugin.id"]}',
-            'Id': (f'{vuln["asset.aws_region"]}/'
-                   f'{vuln["asset.aws_ec2_instance_id"]}/'
-                   f'{vuln["plugin.id"]}'
-                   ),
+            'Id': (
+                f'{vuln["asset.aws_region"]}/'
+                f'{vuln["asset.aws_ec2_instance_id"]}/'
+                f'{vuln["plugin.id"]}'
+            ),
             'CreatedAt': self.start_date,
             'UpdatedAt': self.start_date,
             'Types': ['Software and Configuration Checks/Vulnerabilities/CVE'],
@@ -109,27 +116,29 @@ class Finding:
             # Some plugin names run quite long, we will need to truncate to
             # the max string size that AWS supports.
             'Title': trunc(vuln['plugin.name'], 256),
-
             # The description cannot exceed 1024 characters in size.
             'Description': trunc(vuln['plugin.description'], 1024),
-            'Resources': [{
-                'Type': 'AwsEc2Instance',
-                'Id': ('arn:aws:ec2:'
-                       f'{vuln["asset.aws_region"]}:'
-                       f'{vuln["asset.aws_owner_id"]}:'
-                       'instance:'
-                       f'{vuln["asset.aws_ec2_instance_id"]}'
-                       ),
-                'Region': vuln['asset.aws_region'],
-                'Details': {
-                    'AwsEc2Instance': {
-                        'Type': vuln['asset.aws_ec2_instance_type'],
-                        'ImageId': vuln['asset.aws_ec2_instance_ami_id'],
-                        'IpV4Addresses': vuln['asset.ipv4s'],
-                        'IpV6Addresses': vuln['asset.ipv6s'],
+            'Resources': [
+                {
+                    'Type': 'AwsEc2Instance',
+                    'Id': (
+                        'arn:aws:ec2:'
+                        f'{vuln["asset.aws_region"]}:'
+                        f'{vuln["asset.aws_owner_id"]}:'
+                        'instance:'
+                        f'{vuln["asset.aws_ec2_instance_id"]}'
+                    ),
+                    'Region': vuln['asset.aws_region'],
+                    'Details': {
+                        'AwsEc2Instance': {
+                            'Type': vuln['asset.aws_ec2_instance_type'],
+                            'ImageId': vuln['asset.aws_ec2_instance_ami_id'],
+                            'IpV4Addresses': vuln['asset.ipv4s'],
+                            'IpV6Addresses': vuln['asset.ipv6s'],
+                        },
                     },
-                },
-            }],
+                }
+            ],
             'ProductFields': {
                 'CVE': ', '.join(vuln.get('plugin.cve', [])),
                 'Plugin Family': vuln['plugin.family'],
@@ -142,12 +151,11 @@ class Finding:
             # 'SourceUrl': 'XXXXXXX',
             'Remediation': {
                 'Recommendation': {
-
                     # The solution cannot exceed 1024 characters in length.
                     'Text': trunc(vuln['plugin.solution'], 512),
-                    'Url': vuln.get('plugin.see_also', [])[0]
+                    'Url': vuln.get('plugin.see_also', [])[0],
                 }
             },
-            'RecordState': STATE_MAP[vuln['state']]
+            'RecordState': STATE_MAP[vuln['state']],
         }
         return dict_clean(finding)

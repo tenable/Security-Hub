@@ -54,3 +54,37 @@ readme = {file = ["README.md"], content-type = "text/markdown"}
 [tool.setuptools.packages.find]
 include         = ["tenable_aws_sechub*"]
 
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "B"]
+fixable = [ "ALL" ]
+unfixable = [ "B" ]
+
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401"]
+"tenable/vm.py" = ["F401"]
+"**/{tests,docs,tools}/*" = ["E402"]
+
+[tool.pytest.ini_options]
+addopts  = "--cov-report term-missing --cov=tenable_aws_sechub"
+pythonpath = ["."]
+testpaths = ["./tests"]
+filterwarnings = ["ignore:::DeprecationWarning"]
+
+[dependency-groups]
+dev = [
+    "moto>=5.0.28",
+    "pytest>=8.3.4",
+    "pytest-console-scripts>=1.4.1",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.6",
+]

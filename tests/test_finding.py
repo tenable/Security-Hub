@@ -8,15 +8,19 @@ def test_finding_required_typerror(finding_local):
     required params actually fail on this local asset.
     """
     f = Finding('', '')
-    with pytest.raises(KeyError, match=('The required asset attributes '
-                                        'asset.aws_region,'
-                                        'asset.aws_ec2_instance_id,'
-                                        'asset.aws_owner_id,'
-                                        'asset.aws_ec2_instance_type,'
-                                        'asset.aws_ec2_instance_ami_id '
-                                        'were not set on asset '
-                                        '01234567-1234-abcd-0987-01234567890a'
-                                        )):
+    with pytest.raises(
+        KeyError,
+        match=(
+            'The required asset attributes '
+            'asset.aws_region,'
+            'asset.aws_ec2_instance_id,'
+            'asset.aws_owner_id,'
+            'asset.aws_ec2_instance_type,'
+            'asset.aws_ec2_instance_ami_id '
+            'were not set on asset '
+            '01234567-1234-abcd-0987-01234567890a'
+        ),
+    ):
         resp = f.check_required_params(finding_local)
 
 
@@ -30,7 +34,7 @@ def test_finding_generate_finding_keyerror(finding_local, finding_aws):
     with pytest.raises(KeyError):
         resp = f.generate(finding_local)
 
-    del(finding_aws['plugin.type'])
+    del finding_aws['plugin.type']
     with pytest.raises(KeyError, match='plugin.type'):
         resp = f.generate(finding_aws)
 
@@ -49,7 +53,10 @@ def test_finding_generate_finding_success(finding_aws):
     assert resp['SchemaVersion'] == '2018-10-08'
     assert resp['FirstObservedAt'] == '2018-03-22T13:29:22.070Z'
     assert resp['LastObservedAt'] == '2018-12-14T12:07:38.155Z'
-    assert resp['ProductArn'] == 'arn:aws:securityhub:AWS-REGION-1::product/tenable/tenable-io'
+    assert (
+        resp['ProductArn']
+        == 'arn:aws:securityhub:AWS-REGION-1::product/tenable/tenable-io'
+    )
     assert resp['AwsAccountId'] == 'ACCOUNT-ID'
     assert resp['GeneratorId'] == 'tenable-plugin-106875'
     assert resp['Id'] == 'us-east-1/i-00f9e618482900000/106875'
@@ -62,17 +69,27 @@ def test_finding_generate_finding_success(finding_aws):
     assert resp['Title'] == 'Debian DSA-4117-1 : gcc-4.9 - security update'
     assert isinstance(resp['Description'], str)
     assert resp['Resources'][0]['Type'] == 'AwsEc2Instance'
-    assert resp['Resources'][0]['Id'] == 'arn:aws:ec2:us-east-1:600832220000:instance:i-00f9e618482900000'
+    assert (
+        resp['Resources'][0]['Id']
+        == 'arn:aws:ec2:us-east-1:600832220000:instance:i-00f9e618482900000'
+    )
     assert resp['Resources'][0]['Region'] == 'us-east-1'
     assert resp['Resources'][0]['Details']['AwsEc2Instance']['Type'] == 't2.medium'
-    assert resp['Resources'][0]['Details']['AwsEc2Instance']['ImageId'] == 'ami-daf89000'
-    assert resp['Resources'][0]['Details']['AwsEc2Instance']['IpV4Addresses'] == ['192.168.101.249']
+    assert (
+        resp['Resources'][0]['Details']['AwsEc2Instance']['ImageId'] == 'ami-daf89000'
+    )
+    assert resp['Resources'][0]['Details']['AwsEc2Instance']['IpV4Addresses'] == [
+        '192.168.101.249'
+    ]
     assert resp['Resources'][0]['Details']['AwsEc2Instance']['IpV6Addresses'] == []
     assert resp['ProductFields']['CVE'] == ''
     assert resp['ProductFields']['Plugin Family'] == 'Debian Local Security Checks'
     assert resp['ProductFields']['Type'] == 'local'
     assert isinstance(resp['Remediation']['Recommendation']['Text'], str)
-    assert resp['Remediation']['Recommendation']['Url'] == 'https://security-tracker.debian.org/tracker/source-package/gcc-4.9'
+    assert (
+        resp['Remediation']['Recommendation']['Url']
+        == 'https://security-tracker.debian.org/tracker/source-package/gcc-4.9'
+    )
     assert resp['RecordState'] == 'ACTIVE'
 
     # Also check to make sure that a fixed finding returns an "ARCHIVED"
