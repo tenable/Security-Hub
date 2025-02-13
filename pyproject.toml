@@ -45,7 +45,7 @@ Issues          = "https://github.com/tenable/Security-Hub/issues"
 Changelog       = "https://github.com/tenable/Security-Hub/blob/main/CHANGELOG.md"
 
 [project.scripts]
-tenb2jira       = "tenable_aws_sechub.cli:app"
+tvm2aws         = "tenable_aws_sechub.cli:app"
 
 [tool.setuptools.dynamic]
 version = {attr = "tenable_aws_sechub.version.version"}
