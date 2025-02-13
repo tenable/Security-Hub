@@ -67,46 +67,53 @@ def finding():
             'netbios_name': 'ip-10-10-1-73',
             'operating_system': ['Linux Kernel 3.16.0-4-amd64 on Debian 8.7'],
             'tracked': True,
-            'uuid': '01234567-1234-abcd-0987-01234567890b'
-            },
+            'uuid': '01234567-1234-abcd-0987-01234567890b',
+        },
         'first_found': '2018-03-22T13:29:22.070Z',
         'last_found': '2018-12-14T12:07:38.155Z',
-        'output': '\n'.join([
-            'Remote package installed : cpp-4.9_4.9.2-10',
-            'Should be : cpp-4.9_4.9.2-10+deb8u1\n',
-            'Remote package installed : gcc-4.9_4.9.2-10',
-            'Should be : gcc-4.9_4.9.2-10+deb8u1\n',
-            'Remote package installed : gcc-4.9-base_4.9.2-10',
-            'Should be : gcc-4.9-base_4.9.2-10+deb8u1\n',
-            'Remote package installed : libasan1_4.9.2-10',
-            'Should be : libasan1_4.9.2-10+deb8u1\n',
-            'Remote package installed : libatomic1_4.9.2-10',
-            'Should be : libatomic1_4.9.2-10+deb8u1\n',
-            'Remote package installed : libcilkrts5_4.9.2-10',
-            'Should be : libcilkrts5_4.9.2-10+deb8u1\n',
-            'Remote package installed : libgcc-4.9-dev_4.9.2-10',
-            'Should be : libgcc-4.9-dev_4.9.2-10+deb8u1\n',
-            'Remote package installed : libgomp1_4.9.2-10',
-            'Should be : libgomp1_4.9.2-10+deb8u1\n',
-            'Remote package installed : libitm1_4.9.2-10',
-            'Should be : libitm1_4.9.2-10+deb8u1\n',
-            'Remote package installed : liblsan0_4.9.2-10',
-            'Should be : liblsan0_4.9.2-10+deb8u1\n',
-            'Remote package installed : libquadmath0_4.9.2-10',
-            'Should be : libquadmath0_4.9.2-10+deb8u1\n',
-            'Remote package installed : libtsan0_4.9.2-10',
-            'Should be : libtsan0_4.9.2-10+deb8u1\n',
-            'Remote package installed : libubsan0_4.9.2-10',
-            'Should be : libubsan0_4.9.2-10+deb8u1\n']),
+        'output': '\n'.join(
+            [
+                'Remote package installed : cpp-4.9_4.9.2-10',
+                'Should be : cpp-4.9_4.9.2-10+deb8u1\n',
+                'Remote package installed : gcc-4.9_4.9.2-10',
+                'Should be : gcc-4.9_4.9.2-10+deb8u1\n',
+                'Remote package installed : gcc-4.9-base_4.9.2-10',
+                'Should be : gcc-4.9-base_4.9.2-10+deb8u1\n',
+                'Remote package installed : libasan1_4.9.2-10',
+                'Should be : libasan1_4.9.2-10+deb8u1\n',
+                'Remote package installed : libatomic1_4.9.2-10',
+                'Should be : libatomic1_4.9.2-10+deb8u1\n',
+                'Remote package installed : libcilkrts5_4.9.2-10',
+                'Should be : libcilkrts5_4.9.2-10+deb8u1\n',
+                'Remote package installed : libgcc-4.9-dev_4.9.2-10',
+                'Should be : libgcc-4.9-dev_4.9.2-10+deb8u1\n',
+                'Remote package installed : libgomp1_4.9.2-10',
+                'Should be : libgomp1_4.9.2-10+deb8u1\n',
+                'Remote package installed : libitm1_4.9.2-10',
+                'Should be : libitm1_4.9.2-10+deb8u1\n',
+                'Remote package installed : liblsan0_4.9.2-10',
+                'Should be : liblsan0_4.9.2-10+deb8u1\n',
+                'Remote package installed : libquadmath0_4.9.2-10',
+                'Should be : libquadmath0_4.9.2-10+deb8u1\n',
+                'Remote package installed : libtsan0_4.9.2-10',
+                'Should be : libtsan0_4.9.2-10+deb8u1\n',
+                'Remote package installed : libubsan0_4.9.2-10',
+                'Should be : libubsan0_4.9.2-10+deb8u1\n',
+            ]
+        ),
         'plugin': {
             'cpe': [
                 'p-cpe:/a:debian:debian_linux:gcc-4.9',
-                'cpe:/o:debian:debian_linux:8.0'],
-            'description': ' '.join([
-                'This update doesn\'t fix a vulnerability in GCC',
-                'itself, but instead\n',
-                'provides support for building retpoline-enabled ',
-                'Linux kernel updates.']),
+                'cpe:/o:debian:debian_linux:8.0',
+            ],
+            'description': ' '.join(
+                [
+                    "This update doesn't fix a vulnerability in GCC",
+                    'itself, but instead\n',
+                    'provides support for building retpoline-enabled ',
+                    'Linux kernel updates.',
+                ]
+            ),
             'family': 'Debian Local Security Checks',
             'family_id': 3,
             'has_patch': True,
@@ -117,41 +124,43 @@ def finding():
             'publication_date': '2018-02-20T00:00:00Z',
             'risk_factor': 'High',
             'see_also': [
-                ('https://security-tracker.debian.org/'
-                 'tracker/source-package/gcc-4.9'),
+                ('https://security-tracker.debian.org/tracker/source-package/gcc-4.9'),
                 'https://packages.debian.org/source/jessie/gcc-4.9',
-                'https://www.debian.org/security/2018/dsa-4117'
+                'https://www.debian.org/security/2018/dsa-4117',
             ],
-            'solution': ' '.join([
-                'Upgrade the gcc-4.9 packages.\n\n',
-                'For the oldstable distribution (jessie), this problem ',
-                'has been fixed in version 4.9.2-10+deb8u1.']),
-            'synopsis': ('The remote Debian host is missing '
-                         'a security-related update.'
-                         ),
+            'solution': ' '.join(
+                [
+                    'Upgrade the gcc-4.9 packages.\n\n',
+                    'For the oldstable distribution (jessie), this problem ',
+                    'has been fixed in version 4.9.2-10+deb8u1.',
+                ]
+            ),
+            'synopsis': (
+                'The remote Debian host is missing a security-related update.'
+            ),
             'type': 'local',
             'version': '3.3',
-            'xrefs': [{'id': '4117', 'type': 'DSA'}]},
+            'xrefs': [{'id': '4117', 'type': 'DSA'}],
+        },
         'port': {'port': 0, 'protocol': 'TCP'},
         'scan': {
             'completed_at': '2018-12-14T12:07:38.155Z',
-            'schedule_uuid': ('template-b717964c-4bf0-d629-'
-                              '7d8b-86403fead6afd63b62f2944511f8'),
+            'schedule_uuid': (
+                'template-b717964c-4bf0-d629-7d8b-86403fead6afd63b62f2944511f8'
+            ),
             'started_at': '2018-12-14T12:01:00.129Z',
-            'uuid': '417fbf84-9725-43ea-b878-81ab1a90de03'
+            'uuid': '417fbf84-9725-43ea-b878-81ab1a90de03',
         },
         'severity': 'high',
         'severity_default_id': 3,
         'severity_id': 3,
         'severity_modification_type': 'NONE',
-        'state': 'OPEN'
+        'state': 'OPEN',
     }
 
 
 def composite_finding(asset, finding):
-    finding['asset'] = dict_merge(finding['asset'],
-                                  asset
-                                  )
+    finding['asset'] = dict_merge(finding['asset'], asset)
     finding = dict_flatten(finding)
     finding['asset.uuid'] = finding['asset.id']
     return finding
