@@ -122,6 +122,7 @@ class Processor:  # noqa PLR902
                     f'Could not collect the asset metadata for {vuln["asset"]["uuid"]} '
                     f'within asset cache.  Not reporting plugin {vuln["plugin"]["id"]}.'
                 )
+                continue
             vuln['asset'] = dict_merge(vuln['asset'], asset_obj)
             try:
                 finding = self.aws_finding.generate(vuln)
