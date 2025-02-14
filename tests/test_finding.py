@@ -1,4 +1,5 @@
 import pytest
+
 from tenable_aws_sechub.finding import Finding
 
 
@@ -97,3 +98,12 @@ def test_finding_generate_finding_success(finding_aws):
     finding_aws['state'] = 'FIXED'
     resp = f.generate(finding_aws)
     assert resp['RecordState'] == 'ARCHIVED'
+
+
+def test_generate_finding_none_url(finding_aws):
+    f = Finding('AWS-REGION-1', 'ACCOUNT-ID')
+
+    del finding_aws['plugin.see_also']
+    resp = f.generate(finding_aws)
+
+    assert 'Url' not in resp['Remediation']['Recommendation']

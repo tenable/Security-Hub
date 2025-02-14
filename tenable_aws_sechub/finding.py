@@ -4,9 +4,9 @@ AWS Security Hub finding.
 """
 
 from typing import Dict
-from restfly.utils import dict_flatten, dict_clean, trunc
-import arrow
 
+import arrow
+from restfly.utils import dict_clean, dict_flatten, trunc
 
 SEV_MAP = {0: 0, 1: 3, 2: 5, 3: 7, 4: 10}
 STATE_MAP = {
@@ -153,7 +153,9 @@ class Finding:
                 'Recommendation': {
                     # The solution cannot exceed 1024 characters in length.
                     'Text': trunc(vuln['plugin.solution'], 512),
-                    'Url': vuln.get('plugin.see_also', [])[0],
+                    'Url': vuln.get('plugin.see_also')[0]
+                    if vuln.get('plugin.see_also')
+                    else None,
                 }
             },
             'RecordState': STATE_MAP[vuln['state']],
