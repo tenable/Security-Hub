@@ -133,8 +133,12 @@ class Finding:
                         'AwsEc2Instance': {
                             'Type': vuln['asset.aws_ec2_instance_type'],
                             'ImageId': vuln['asset.aws_ec2_instance_ami_id'],
-                            'IpV4Addresses': vuln['asset.ipv4s'],
-                            'IpV6Addresses': vuln['asset.ipv6s'],
+                            'IpV4Addresses': vuln['asset.ipv4s']
+                            if vuln.get('asset.ipv4s')
+                            else None,
+                            'IpV6Addresses': vuln['asset.ipv6s']
+                            if vuln.get('asset.ipv6s')
+                            else None,
                         },
                     },
                 }
