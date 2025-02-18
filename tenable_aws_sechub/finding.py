@@ -94,7 +94,7 @@ class Finding:
             'FirstObservedAt': vuln['first_found'],
             'LastObservedAt': vuln['last_found'],
             'ProductArn': (
-                f'arn:aws:securityhub:{self.region}::product/tenable/tenable-io'
+                f'arn:aws:securityhub:{self.region}::product/tenable/vulnerability-management'
             ),
             'AwsAccountId': self.account_id,
             'GeneratorId': f'tenable-plugin-{vuln["plugin.id"]}',
