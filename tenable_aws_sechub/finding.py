@@ -25,10 +25,14 @@ class Finding:
     region: str
     account_id: str
     start_date: str
+    map_to_asset_account: bool
 
-    def __init__(self, region: str, account_id: str):
+    def __init__(
+        self, region: str, account_id: str, map_to_asset_account: bool = False
+    ):
         self.region = region
         self.account_id = account_id
+        self.map_to_asset_account = map_to_asset_account
         self.start_date = arrow.now().isoformat()
 
     def check_required_params(self, vuln: Dict):
@@ -96,7 +100,11 @@ class Finding:
             'ProductArn': (
                 f'arn:aws:securityhub:{self.region}::product/tenable/vulnerability-management'
             ),
-            'AwsAccountId': self.account_id,
+            'AwsAccountId': (
+                vuln['asset.aws_owner_id']
+                if self.map_to_asset_account and vuln.get('asset.aws_owner_id')
+                else self.account_id
+            ),
             'GeneratorId': f'tenable-plugin-{vuln["plugin.id"]}',
             'Id': (
                 f'{vuln["asset.aws_region"]}/'

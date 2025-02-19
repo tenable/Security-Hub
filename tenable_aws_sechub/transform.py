@@ -58,7 +58,8 @@ class Processor:  # noqa PLR902
         )
         self.aws_finding = Finding(
             region=config.get('aws_region', self.aws.meta.region_name),
-            account_id=config['aws_account_id'],
+            account_id=str(config['aws_account_id']),
+            map_to_asset_account=config.get('map_to_asset_account', False),
         )
         self._log = logging.getLogger('Tenb2SecHub')
 
@@ -125,6 +126,7 @@ class Processor:  # noqa PLR902
                 continue
             vuln['asset'] = dict_merge(vuln['asset'], asset_obj)
             try:
+                self._log.debug(vuln)
                 finding = self.aws_finding.generate(vuln)
                 self.add(finding)
             except KeyError as err:
