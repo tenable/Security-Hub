@@ -17,6 +17,10 @@ aws_account_id =
 # The number of findings to import at a time to Security Hub.
 # batch_size = 100
 
+# Should we match assets to the AWS account ID associated to the asset itself
+# and only fall back to the account id in the config file if we can't find one?
+# map_to_asset_account = false
+
 # The TVM finding states to pull from the vulnerability exports APIs.
 # states = ["open", "reopened", "fixed"]
 
