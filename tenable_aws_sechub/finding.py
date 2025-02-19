@@ -3,11 +3,13 @@ The findings module handles transforming a TVM vulnerability finding into an
 AWS Security Hub finding.
 """
 
-from typing import Dict
+import logging
+from typing import Dict, List
 
 import arrow
 from restfly.utils import dict_clean, dict_flatten, trunc
 
+log = logging.getLogger('sechub.finding')
 SEV_MAP = {0: 0, 1: 3, 2: 5, 3: 7, 4: 10}
 STATE_MAP = {
     'OPEN': 'ACTIVE',
@@ -24,16 +26,25 @@ class Finding:
 
     region: str
     account_id: str
+    allowed_accounts: List[str] | None = None
     start_date: str
     map_to_asset_account: bool
 
     def __init__(
-        self, region: str, account_id: str, map_to_asset_account: bool = False
+        self,
+        region: str,
+        account_id: str,
+        map_to_asset_account: bool = False,
+        allowed_accounts: List[str] | None = None,
     ):
         self.region = region
         self.account_id = account_id
         self.map_to_asset_account = map_to_asset_account
         self.start_date = arrow.now().isoformat()
+        if allowed_accounts:
+            self.allowed_accounts = allowed_accounts
+        elif map_to_asset_account and not allowed_accounts:
+            self.allowed_accounts = [account_id]
 
     def check_required_params(self, vuln: Dict):
         """
@@ -63,6 +74,15 @@ class Finding:
                     f'The required asset attributes {",".join(failed)}'
                     f' were not set on asset {vuln["asset.uuid"]}'
                 )
+            )
+        if (
+            self.allowed_accounts
+            and vuln.get('asset.aws_owner_id') not in self.allowed_accounts
+            and self.map_to_asset_account
+        ):
+            raise KeyError(
+                f'asset {vuln["asset.aws_owner_id"]}:{vuln["asset.uuid"]} is not within'
+                ' one of the allowed accounts.'
             )
 
     def generate(self, vuln: Dict) -> Dict:

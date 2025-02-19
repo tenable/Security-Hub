@@ -60,6 +60,7 @@ class Processor:  # noqa PLR902
             region=config.get('aws_region', self.aws.meta.region_name),
             account_id=str(config['aws_account_id']),
             map_to_asset_account=config.get('map_to_asset_account', False),
+            allowed_accounts=config.get('allowed_accounts'),
         )
         self._log = logging.getLogger('Tenb2SecHub')
 

@@ -22,7 +22,7 @@ def test_finding_required_typerror(finding_local):
             '01234567-1234-abcd-0987-01234567890a'
         ),
     ):
-        resp = f.check_required_params(finding_local)
+        f.check_required_params(finding_local)
 
 
 def test_finding_generate_finding_keyerror(finding_local, finding_aws):
@@ -33,11 +33,20 @@ def test_finding_generate_finding_keyerror(finding_local, finding_aws):
     """
     f = Finding('', '')
     with pytest.raises(KeyError):
-        resp = f.generate(finding_local)
+        f.generate(finding_local)
 
     del finding_aws['plugin.type']
     with pytest.raises(KeyError, match='plugin.type'):
-        resp = f.generate(finding_aws)
+        f.generate(finding_aws)
+
+
+def test_finding_account_restrictions(finding_aws):
+    f = Finding('', '600832220000', True)
+    f.generate(finding_aws)
+
+    f = Finding('', 'ACCOUNT-ID', True)
+    with pytest.raises(KeyError, match='s not within one of the allowed accounts'):
+        f.generate(finding_aws)
 
 
 def test_finding_generate_finding_success(finding_aws):
@@ -56,7 +65,7 @@ def test_finding_generate_finding_success(finding_aws):
     assert resp['LastObservedAt'] == '2018-12-14T12:07:38.155Z'
     assert (
         resp['ProductArn']
-        == 'arn:aws:securityhub:AWS-REGION-1::product/tenable/tenable-io'
+        == 'arn:aws:securityhub:AWS-REGION-1::product/tenable/vulnerability-management'
     )
     assert resp['AwsAccountId'] == 'ACCOUNT-ID'
     assert resp['GeneratorId'] == 'tenable-plugin-106875'
@@ -82,7 +91,7 @@ def test_finding_generate_finding_success(finding_aws):
     assert resp['Resources'][0]['Details']['AwsEc2Instance']['IpV4Addresses'] == [
         '192.168.101.249'
     ]
-    assert resp['Resources'][0]['Details']['AwsEc2Instance']['IpV6Addresses'] == []
+    assert 'IpV6Addresses' not in resp['Resources'][0]['Details']['AwsEc2Instance']
     assert resp['ProductFields']['CVE'] == ''
     assert resp['ProductFields']['Plugin Family'] == 'Debian Local Security Checks'
     assert resp['ProductFields']['Type'] == 'local'
