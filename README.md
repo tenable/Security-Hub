@@ -1,7 +1,7 @@
 # Tenable Vulnerability Management to AWS Transformer
 
 | :exclamation: | If upgrading from v1 please read the upgrade section |
-| --------------|:---------------------------------------------------- |
+| ------------- | :--------------------------------------------------- |
 
 This tool is designed to consume Tenable.io asset and vulnerability data,
 transform that data into the AWS Security Hub Finding format, and then upload
@@ -16,9 +16,9 @@ the config file to the container.
 - The Tenable Vulnerability Management Integration for Security Hub must be
   configured to accept findings from the integration.
 - At a minimum the configuration file must have the account id that the events
-  will be sent to.  Ideally the region should be configured as well.
+  will be sent to. Ideally the region should be configured as well.
 - A set of API Keys within TVM should be configured to allow exportation of
-  assets and vulnerability findings from the platform.  These keys should be
+  assets and vulnerability findings from the platform. These keys should be
   wither configured within the configuration file or as environment variables
 
 ## Installation
@@ -43,15 +43,18 @@ Simply build a configuration file (or use the [example file][cfg] provided)
 with the following details:
 
 ```toml
-aws_account_id = 12344567890
-aws_region = "us-east-1"
 access_key = "1234567890abcdef1234567890"
 secret_key = "1234567890abcdef1234567890"
+
+[[aws_profile]]
+name = "default"
+accounts = [1234567890]
+region = "us-east-1"
 ```
 
 Once the configuration file is saved, go ahead and ensure that the AWS CLI can
 communicate to AWS, or generate the appropriate configuration parameters that
-AWS needs for their boto3 client.  Details for how to do this is documented
+AWS needs for their boto3 client. Details for how to do this is documented
 below:
 
 1. [Boto3 Configuration](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration)
@@ -62,7 +65,6 @@ below:
 ```
 ❯ tvm2aws --configfile /path/to/config.toml
 ```
-
 
 ## Commandline options
 

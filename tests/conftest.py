@@ -1,5 +1,6 @@
-import pytest
 import os
+
+import pytest
 from restfly.utils import dict_flatten, dict_merge
 
 # Setup the dummy AWS environment.
@@ -14,18 +15,6 @@ os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 def asset_local():
     return {
         'id': '01234567-1234-abcd-0987-01234567890a',
-        'aws_ec2_instance_ami_id': None,
-        'aws_ec2_instance_id': None,
-        'aws_owner_id': None,
-        'aws_availability_zone': None,
-        'aws_region': None,
-        'aws_vpc_id': None,
-        'aws_ec2_instance_group_name': None,
-        'aws_ec2_instance_state_name': None,
-        'aws_ec2_instance_type': None,
-        'aws_subnet_id': None,
-        'aws_ec2_product_code': None,
-        'aws_ec2_name': None,
         'ipv4s': ['192.168.0.1', '192.168.0.2'],
         'ipv6s': [],
     }
@@ -35,20 +24,26 @@ def asset_local():
 def asset_aws():
     return {
         'id': '01234567-1234-abcd-0987-01234567890b',
-        'aws_availability_zone': 'us-east-1a',
-        'aws_ec2_instance_ami_id': 'ami-daf89000',
-        'aws_ec2_instance_group_name': None,
-        'aws_ec2_instance_id': 'i-00f9e618482900000',
-        'aws_ec2_instance_state_name': None,
-        'aws_ec2_instance_type': 't2.medium',
-        'aws_ec2_name': None,
-        'aws_ec2_product_code': None,
-        'aws_owner_id': '600832220000',
-        'aws_region': 'us-east-1',
-        'aws_subnet_id': 'subnet-e68e0000',
-        'aws_vpc_id': 'vpc-10fa0000',
-        'ipv4s': ['192.168.101.249'],
-        'ipv6s': [],
+        'cloud': {
+            'aws': {
+                'availability_zone': 'us-east-1a',
+                'ec2_instance_ami_id': 'ami-daf89000',
+                'ec2_instance_group_name': None,
+                'ec2_instance_id': 'i-00f9e618482900000',
+                'ec2_instance_state_name': None,
+                'ec2_instance_type': 't2.medium',
+                'ec2_name': None,
+                'ec2_product_code': None,
+                'owner_id': '600832220000',
+                'region': 'us-east-1',
+                'subnet_id': 'subnet-e68e0000',
+                'vpc_id': 'vpc-10fa0000',
+            }
+        },
+        'network': {
+            'ipv4s': ['192.168.101.249'],
+            'ipv6s': [],
+        },
     }
 
 

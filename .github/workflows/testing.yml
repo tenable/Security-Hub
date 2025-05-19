@@ -17,8 +17,10 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - run: |
+          mkdir -p ~/.aws
+          echo -e "[default]\naws_access_key_id=AKAI12345\naws_secret_access_key=S12345678" > ~/.aws/credentials
       - run: uv sync --all-extras --dev
-
       - name: Code linting
         run: uv run ruff check --exit-zero
 

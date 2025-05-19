@@ -83,6 +83,7 @@ filterwarnings = ["ignore:::DeprecationWarning"]
 [dependency-groups]
 dev = [
     "moto>=5.0.28",
+    "ptpython>=3.0.30",
     "pytest>=8.3.4",
     "pytest-console-scripts>=1.4.1",
     "pytest-cov>=6.0.0",
