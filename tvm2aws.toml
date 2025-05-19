@@ -1,8 +1,3 @@
-# The AWS region and account id that SecurityHub is running in.  The region
-# will be pulled from AWS if left unspecified.
-# aws_region = "us-east-1"
-aws_account_id =
-
 # The Tenable.io API Access and secret Keys.  If left unspecified, the API
 # keys will be pulled from the environment variables
 # TIO_ACCESS_KEY
@@ -36,3 +31,20 @@ aws_account_id =
 # from.  Please note that the integration will automatically update this
 # parameter after every run.
 # since = 0
+
+# AWS Profile to account mappings definitions allow the integration to
+# demultiplex the assets stored within Tenable Vulnerability Management
+# and push those to the appropriate AWS profiles & accounts.  If multiple
+# AWS profiles are needed, then simply specify multiple [[aws_profile]]
+# declarations.
+
+[[aws_profile]]
+# The AWS CLI/Boto3 profile name.
+name = ""
+
+# The list of accounts to associate with this profile.
+# accounts = [1234567890, 2345678901]
+accounts = []
+
+# The region that Security Hub is installed to.
+region = "us-east-1"
