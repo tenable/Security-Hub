@@ -25,26 +25,20 @@ class Finding:
     """
 
     region: str
-    account_id: str
-    allowed_accounts: List[str] | None = None
     start_date: str
-    map_to_asset_account: bool
 
     def __init__(
         self,
         region: str,
-        account_id: str,
-        map_to_asset_account: bool = False,
-        allowed_accounts: List[str] | None = None,
     ):
         self.region = region
-        self.account_id = account_id
-        self.map_to_asset_account = map_to_asset_account
+        # self.account_id = account_id
+        # self.map_to_asset_account = map_to_asset_account
         self.start_date = arrow.now().isoformat()
-        if allowed_accounts:
-            self.allowed_accounts = allowed_accounts
-        elif map_to_asset_account and not allowed_accounts:
-            self.allowed_accounts = [account_id]
+        # if allowed_accounts:
+        #     self.allowed_accounts = allowed_accounts
+        # elif map_to_asset_account and not allowed_accounts:
+        #     self.allowed_accounts = [account_id]
 
     def check_required_params(self, vuln: Dict):
         """
@@ -58,11 +52,11 @@ class Finding:
         # We only need to specify the asset fields that are required as these
         # fields must never have a NoneType value in them.
         required_attributes = [
-            'asset.aws_region',
-            'asset.aws_ec2_instance_id',
-            'asset.aws_owner_id',
-            'asset.aws_ec2_instance_type',
-            'asset.aws_ec2_instance_ami_id',
+            'asset.cloud.aws.region',
+            'asset.cloud.aws.ec2_instance_id',
+            'asset.cloud.aws.owner_id',
+            'asset.cloud.aws.ec2_instance_type',
+            'asset.cloud.aws.ec2_instance_ami_id',
         ]
         failed = []
         for attr in required_attributes:
@@ -75,15 +69,18 @@ class Finding:
                     f' were not set on asset {vuln["asset.uuid"]}'
                 )
             )
-        if (
-            self.allowed_accounts
-            and vuln.get('asset.aws_owner_id') not in self.allowed_accounts
-            and self.map_to_asset_account
-        ):
-            raise KeyError(
-                f'asset {vuln["asset.aws_owner_id"]}:{vuln["asset.uuid"]} is not within'
-                ' one of the allowed accounts.'
-            )
+        # NOTE: Disabled the account checking as we will always be using the account
+        #       owner from the asset moving forward.
+        #
+        # if (
+        #     self.allowed_accounts
+        #     and vuln.get('asset.aws_owner_id') not in self.allowed_accounts
+        #     and self.map_to_asset_account
+        # ):
+        #     raise KeyError(
+        #         f'asset {vuln["asset.aws_owner_id"]}:{vuln["asset.uuid"]} is not within'
+        #         ' one of the allowed accounts.'
+        #     )
 
     def generate(self, vuln: Dict) -> Dict:
         """
@@ -120,15 +117,11 @@ class Finding:
             'ProductArn': (
                 f'arn:aws:securityhub:{self.region}::product/tenable/vulnerability-management'
             ),
-            'AwsAccountId': (
-                vuln['asset.aws_owner_id']
-                if self.map_to_asset_account and vuln.get('asset.aws_owner_id')
-                else self.account_id
-            ),
+            'AwsAccountId': vuln['asset.cloud.aws.owner_id'],
             'GeneratorId': f'tenable-plugin-{vuln["plugin.id"]}',
             'Id': (
-                f'{vuln["asset.aws_region"]}/'
-                f'{vuln["asset.aws_ec2_instance_id"]}/'
+                f'{vuln["asset.cloud.aws.region"]}/'
+                f'{vuln["asset.cloud.aws.ec2_instance_id"]}/'
                 f'{vuln["plugin.id"]}'
             ),
             'CreatedAt': self.start_date,
@@ -151,21 +144,21 @@ class Finding:
                     'Type': 'AwsEc2Instance',
                     'Id': (
                         'arn:aws:ec2:'
-                        f'{vuln["asset.aws_region"]}:'
-                        f'{vuln["asset.aws_owner_id"]}:'
+                        f'{vuln["asset.cloud.aws.region"]}:'
+                        f'{vuln["asset.cloud.aws.owner_id"]}:'
                         'instance:'
-                        f'{vuln["asset.aws_ec2_instance_id"]}'
+                        f'{vuln["asset.cloud.aws.ec2_instance_id"]}'
                     ),
-                    'Region': vuln['asset.aws_region'],
+                    'Region': vuln['asset.cloud.aws.region'],
                     'Details': {
                         'AwsEc2Instance': {
-                            'Type': vuln['asset.aws_ec2_instance_type'],
-                            'ImageId': vuln['asset.aws_ec2_instance_ami_id'],
-                            'IpV4Addresses': vuln['asset.ipv4s']
-                            if vuln.get('asset.ipv4s')
+                            'Type': vuln['asset.cloud.aws.ec2_instance_type'],
+                            'ImageId': vuln['asset.cloud.aws.ec2_instance_ami_id'],
+                            'IpV4Addresses': vuln['asset.network.ipv4s']
+                            if vuln.get('asset.network.ipv4s')
                             else None,
-                            'IpV6Addresses': vuln['asset.ipv6s']
-                            if vuln.get('asset.ipv6s')
+                            'IpV6Addresses': vuln['asset.network.ipv6s']
+                            if vuln.get('asset.network.ipv6s')
                             else None,
                         },
                     },
