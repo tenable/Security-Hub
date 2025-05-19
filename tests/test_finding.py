@@ -8,16 +8,16 @@ def test_finding_required_typerror(finding_local):
     Tests the check_required_params method and check to see if all of the
     required params actually fail on this local asset.
     """
-    f = Finding('', '')
+    f = Finding('')
     with pytest.raises(
         KeyError,
         match=(
             'The required asset attributes '
-            'asset.aws_region,'
-            'asset.aws_ec2_instance_id,'
-            'asset.aws_owner_id,'
-            'asset.aws_ec2_instance_type,'
-            'asset.aws_ec2_instance_ami_id '
+            'asset.cloud.aws.region,'
+            'asset.cloud.aws.ec2_instance_id,'
+            'asset.cloud.aws.owner_id,'
+            'asset.cloud.aws.ec2_instance_type,'
+            'asset.cloud.aws.ec2_instance_ami_id '
             'were not set on asset '
             '01234567-1234-abcd-0987-01234567890a'
         ),
@@ -31,21 +31,12 @@ def test_finding_generate_finding_keyerror(finding_local, finding_aws):
     when an asset or a finding doesn't have the required parameters to generate
     AWS finding.
     """
-    f = Finding('', '')
+    f = Finding('')
     with pytest.raises(KeyError):
         f.generate(finding_local)
 
     del finding_aws['plugin.type']
     with pytest.raises(KeyError, match='plugin.type'):
-        f.generate(finding_aws)
-
-
-def test_finding_account_restrictions(finding_aws):
-    f = Finding('', '600832220000', True)
-    f.generate(finding_aws)
-
-    f = Finding('', 'ACCOUNT-ID', True)
-    with pytest.raises(KeyError, match='s not within one of the allowed accounts'):
         f.generate(finding_aws)
 
 
@@ -55,7 +46,7 @@ def test_finding_generate_finding_success(finding_aws):
     From there we will perform some minor checks to ensure that the generated
     finding object looks correct.
     """
-    f = Finding('AWS-REGION-1', 'ACCOUNT-ID')
+    f = Finding('AWS-REGION-1')
     resp = f.generate(finding_aws)
 
     # Pulled the asserts from the v1 code and made the minor modifications
@@ -67,7 +58,7 @@ def test_finding_generate_finding_success(finding_aws):
         resp['ProductArn']
         == 'arn:aws:securityhub:AWS-REGION-1::product/tenable/vulnerability-management'
     )
-    assert resp['AwsAccountId'] == 'ACCOUNT-ID'
+    assert resp['AwsAccountId'] == '600832220000'
     assert resp['GeneratorId'] == 'tenable-plugin-106875'
     assert resp['Id'] == 'us-east-1/i-00f9e618482900000/106875'
     assert resp['Types'] == ['Software and Configuration Checks/Vulnerabilities/CVE']
@@ -110,7 +101,7 @@ def test_finding_generate_finding_success(finding_aws):
 
 
 def test_generate_finding_none_url(finding_aws):
-    f = Finding('AWS-REGION-1', 'ACCOUNT-ID')
+    f = Finding('')
 
     del finding_aws['plugin.see_also']
     resp = f.generate(finding_aws)
