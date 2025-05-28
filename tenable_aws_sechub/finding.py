@@ -10,7 +10,7 @@ import arrow
 from restfly.utils import dict_clean, dict_flatten, trunc
 
 log = logging.getLogger('sechub.finding')
-SEV_MAP = {0: 0, 1: 3, 2: 5, 3: 7, 4: 10}
+SEV_MAP = {0: 'INFORMATIONAL', 1: 'LOW', 2: 'MEDIUM', 3: 'HIGH', 4: 'CRITICAL'}
 STATE_MAP = {
     'OPEN': 'ACTIVE',
     'NEW': 'ACTIVE',
@@ -97,19 +97,6 @@ class Finding:
         vuln = dict_flatten(vuln)
         self.check_required_params(vuln)
 
-        # Get the base score of the finding.  Amazon prefers that we use the
-        # CVSS base scores and fall back to our own severity rating only if
-        # necessary.  We start with the CVSSv3 score, then fall back to v2,
-        # and lastly fall back to the severity_default_id.
-        # FIXME: I don't really like how this nested fallback looks, and I feel
-        #        there has to be a cleaner way to implement.
-        base_score = vuln.get(
-            'plugin.cvss3_base_score',
-            vuln.get(
-                'plugin.cvss_base_score', SEV_MAP[vuln.get('severity_default_id', 0)]
-            ),
-        )
-
         finding = {
             'SchemaVersion': '2018-10-08',
             'FirstObservedAt': vuln['first_found'],
@@ -128,11 +115,7 @@ class Finding:
             'UpdatedAt': self.start_date,
             'Types': ['Software and Configuration Checks/Vulnerabilities/CVE'],
             'Severity': {
-                'Product': base_score,
-                # AWS' scoring system works differently than Tenable's.  They
-                # use a
-                'Normalized': int(base_score * 4),
-                'Label': vuln['plugin.risk_factor'].upper(),
+                'Label': SEV_MAP[vuln.get('severity_default_id', 0)],
             },
             # Some plugin names run quite long, we will need to truncate to
             # the max string size that AWS supports.
@@ -177,7 +160,9 @@ class Finding:
             'Remediation': {
                 'Recommendation': {
                     # The solution cannot exceed 1024 characters in length.
-                    'Text': trunc(vuln['plugin.solution'], 512),
+                    'Text': trunc(vuln['plugin.solution'], 512)
+                    if vuln.get('plugin.solution')
+                    else None,
                     'Url': vuln.get('plugin.see_also')[0]
                     if vuln.get('plugin.see_also')
                     else None,
