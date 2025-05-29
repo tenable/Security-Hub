@@ -10,7 +10,15 @@ import arrow
 from restfly.utils import dict_clean, dict_flatten, trunc
 
 log = logging.getLogger('sechub.finding')
-SEV_MAP = {0: 'INFORMATIONAL', 1: 'LOW', 2: 'MEDIUM', 3: 'HIGH', 4: 'CRITICAL'}
+
+SEV_MAP = {
+    0: [0, 'INFORMATIONAL'],
+    1: [10, 'LOW'],
+    2: [40, 'MEDIUM'],
+    3: [70, 'HIGH'],
+    4: [90, 'CRITICAL'],
+}
+
 STATE_MAP = {
     'OPEN': 'ACTIVE',
     'NEW': 'ACTIVE',
@@ -96,6 +104,7 @@ class Finding:
         """
         vuln = dict_flatten(vuln)
         self.check_required_params(vuln)
+        normalized, label = SEV_MAP[vuln.get('severity_id', 0)]
 
         finding = {
             'SchemaVersion': '2018-10-08',
@@ -115,7 +124,9 @@ class Finding:
             'UpdatedAt': self.start_date,
             'Types': ['Software and Configuration Checks/Vulnerabilities/CVE'],
             'Severity': {
-                'Label': SEV_MAP[vuln.get('severity_default_id', 0)],
+                'Label': label,
+                'Normalized': normalized,
+                'Original': vuln.get('severity', 'info'),
             },
             # Some plugin names run quite long, we will need to truncate to
             # the max string size that AWS supports.
